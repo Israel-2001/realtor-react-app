@@ -2,8 +2,8 @@ import { useState } from "react";
 import {AiFillEyeInvisible, AiFillEye} from "react-icons/ai"
 import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
-// import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
-// import { toast } from "react-toastify";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
 
 
 export default function SignIn() {
@@ -20,19 +20,19 @@ export default function SignIn() {
       [e.target.id]: e.target.value,
     }));
   }
-  // async function onSubmit(e){
-  //   e.preventDefault()
-  //   try {
-  //     const auth = getAuth()
-  //     const userCredential = await signInWithEmailAndPassword(auth, email, password)
-  //     if (userCredential.user) {
-  //       navigate("/")
-  //     }
-  //     toast.success("Right User Credentials")
-  //   } catch (error) {
-  //     toast.error("Wrong User Credentials")
-  //   }
-  // }
+  async function onSubmit(e){
+    e.preventDefault()
+    try {
+      const auth = getAuth()
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      if (userCredential.user) {
+        navigate("/")
+      }
+      toast.success("Right User Credentials")
+    } catch (error) {
+      toast.error("Wrong User Credentials")
+    }
+  }
   return (
     <section>
       <h1 
@@ -50,7 +50,7 @@ export default function SignIn() {
         </div>
         <div  
           className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={onSubmit}>
             <input 
               type="email" 
               id="email" 
