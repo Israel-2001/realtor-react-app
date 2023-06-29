@@ -1,16 +1,19 @@
 import { getAuth, updateProfile } from "firebase/auth";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
 import { Link } from "react-router-dom";
-import { doc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDocs, orderBy, query, updateDoc, where } from "firebase/firestore";
 import {FcHome} from "react-icons/fc";
+import ListingItem from "../components/ListingItem";
 
 export default function Profile() {
   const auth = getAuth()
   const navigate = useNavigate()
   const [changeDetail, setChangeDetail] = useState(false)
+  const [listings, setListings] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,
     email: auth.currentUser.email,
@@ -28,6 +31,7 @@ export default function Profile() {
   }
   async function onSubmit(){
     try {
+      // eslint-disable-next-line eqeqeq
       if(auth.currentUser.displayName != name){
         //update the display name in firebase auth
         await updateProfile(auth.currentUser, {
@@ -45,6 +49,23 @@ export default function Profile() {
       toast.error("Couldn't update the profile details")
     }
   }
+  useEffect(()=>{
+    async function fetchUserListings(){
+      const listingRef = collection(db, "listings");
+      const q =query(listingRef, where("userRef", "==", auth.currentUser.uid),orderBy("timestamp", "desc"));
+      const querySnap = await getDocs(q);
+      let listings = [];
+      querySnap.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+      setListings(listings);
+      setLoading(false);
+    }
+    fetchUserListings();
+  }, [auth.currentUser.uid]);
   return (
     <>
       <section className="max-w-6xl mx-auto flex justify-center items-center flex-col">
@@ -75,9 +96,9 @@ export default function Profile() {
               className="flex justify-between 
               whitespace-nowrap text-sm sm:text-lg mb-6">
               <p 
-                className="flex items-center bg-blue-600 
-                hover:bg-blue-700 px-2.5 py-1 rounded 
-                text-gray-100"
+                className="flex items-center 
+
+                text-white-100"
               >
                   Do you want to change your name?
                 <span 
@@ -85,18 +106,18 @@ export default function Profile() {
                     changeDetail && onSubmit();
                    setChangeDetail((prevState) => !prevState);
                   }}
-                  className="text-white hover:text-white 
-                  transition ease-in-out duration-200 
-                  m-1 cursor-pointer text-gray-100"> 
+                  className="text-red-600 hover:text-red-700 
+                  transition ease-in-out duration-200 ml-1 
+                  cursor-pointer"> 
                   {changeDetail ? "Apply change" : "Edit"}
                 </span>
               </p>
               <p onClick={onLogout} 
                 className="text-white-500 
-                text-white font-semibold
-                font-sm rounded hover:hover:bg-blue-700
-                transition duration-200 ease-in-out uppercase
-                cursor-pointer px-2.5 py-2 bg-blue-700"
+                text-blue-700 font-semibold
+                font-sm
+                transition duration-200 ease-in-out
+                cursor-pointer"
               >
                 Sign-out
               </p>
@@ -110,7 +131,21 @@ export default function Profile() {
           </button>
         </div>
       </section>
-
+      <div className="max-w-6xl px-3 mt-6 mx-auto">
+        {!loading && listings.length > 0 && (
+          <>
+            <h2 className="text-2xl text-center 
+            font-semibold text-blue-600">
+              My Listing
+            </h2>
+            <ul>
+              {listings.map((listing) => (
+                <ListingItem key={listing.id} id={listing.id} listing={listing.data}/>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
     </>
-  )
+  );
 }

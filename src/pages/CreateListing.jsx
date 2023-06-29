@@ -11,8 +11,7 @@ import { useNavigate } from "react-router-dom";
 export default function CreateListing() {
   const navigate = useNavigate();
   const auth = getAuth()
-  const [ geolocationEnabled, setGeolocationEnabled ] = 
-  useState(true);
+  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
       type: "rent",
@@ -28,7 +27,7 @@ export default function CreateListing() {
       discountedPrice: 0,
       latitude: 0,
       longitude: 0,
-      images:{}
+      images:{},
     });
     const {
       type, 
@@ -125,11 +124,11 @@ export default function CreateListing() {
             }
           },
           (error) => {
-            // Handle unseccessful uploads
+            // Handle unsuccessful uploads
             reject(error)
           },
           () => {
-            // Handle seccessful uploads on complete
+            // Handle successful uploads on complete
             // For instance, get the download URL: https://firebasestorage.googleapis.com/...
             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
              resolve(downloadURL);
@@ -140,7 +139,8 @@ export default function CreateListing() {
     }
 
     const imgUrls = await Promise.all(
-      [...images].map((image)=>storeImage(image))).catch((error)=>{
+      [...images].map((image)=>storeImage(image))
+      ).catch((error)=>{
         setLoading(false)
         toast.error("Images not uploaded");
         return;
@@ -152,6 +152,7 @@ export default function CreateListing() {
       imgUrls,
       geolocation,
       timestamp: serverTimestamp(),
+      userRef: auth.currentUser.uid,
     };
     delete formDataCopy.images;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
