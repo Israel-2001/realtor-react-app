@@ -66,9 +66,10 @@ export default function Profile() {
     }
     fetchUserListings();
   }, [auth.currentUser.uid]);
+
   async function onDelete(listingID){
     if (window.confirm("Are you sure you want to do delete this post?")){
-      await deleteDoc(doc(db,"listing",listingID))
+      await deleteDoc(doc(db,"listings",listingID))
       const updatedListings = listings.filter(
         (listing) => listing.id !== listingID
       );
